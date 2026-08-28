@@ -45,7 +45,7 @@ export const Editor: React.FC<EditorProps> = ({
   const latestContentRef = useRef<any>(null);
   const isSavingRef = useRef<boolean>(false);
   const pendingSaveRef = useRef<boolean>(false);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Flag to prevent infinite broadcast loops on remote updates
   const isRemoteUpdateRef = useRef<boolean>(false);

@@ -36,7 +36,7 @@ export const DocumentEditorPage: React.FC = () => {
   const [titleInput, setTitleInput] = useState('');
   const [headerSaveStatus, setHeaderSaveStatus] = useState<SaveStatus>('saved');
 
-  const titleDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const titleDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Share Modal State
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
