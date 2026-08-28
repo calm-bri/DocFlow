@@ -14,8 +14,11 @@ export async function getUsers(req: AuthenticatedRequest, res: Response) {
       orderBy: { name: 'asc' },
     });
     return res.json(users);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching users:', error);
-    return res.status(500).json({ error: 'Failed to fetch users' });
+    return res.status(500).json({
+      error: 'Failed to fetch users',
+      message: error?.message || 'Database query error',
+    });
   }
 }

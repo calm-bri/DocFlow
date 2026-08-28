@@ -91,9 +91,13 @@ export const io = initSocketServer(server);
 export default app;
 export { server };
 
+import { bootstrapDatabase } from './services/dbBootstrap';
+
 if (process.env.NODE_ENV !== 'test') {
-  server.listen(port, () => {
+  server.listen(port, async () => {
     console.log(`DocFlow HTTP & Socket.IO Server running at port ${port}`);
+    // Run self-healing schema creation & seed check
+    await bootstrapDatabase();
   });
 
   // Graceful Shutdown Handling
