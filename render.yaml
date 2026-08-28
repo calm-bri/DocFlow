@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: docflow-server
+    env: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: cd server && npm start
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
