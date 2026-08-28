@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Editor, SaveStatus } from '../components/Editor';
 import { ShareModal } from '../components/ShareModal';
+import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
 import { Collaborators } from '../components/Collaborators';
 import { useUser } from '../context/UserContext';
 import { DocumentService } from '../services/api';
@@ -11,6 +12,7 @@ import { DocumentItem } from '../types/index';
 import {
   ArrowLeft,
   Share2,
+  Trash2,
   Edit2,
   Check,
   ShieldAlert,
@@ -40,6 +42,9 @@ export const DocumentEditorPage: React.FC = () => {
 
   // Share Modal State
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const fetchDocument = async () => {
     if (!id) return;
@@ -241,15 +246,26 @@ export const DocumentEditorPage: React.FC = () => {
               {/* Real-time Connection Badge & Collaborators Avatars */}
               <Collaborators collaborators={collaborators} />
 
-              {/* Share Button (Only visible to Document Owner) */}
+              {/* Owner Actions (Share & Delete) */}
               {isOwner && (
-                <button
-                  onClick={() => setIsShareModalOpen(true)}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-xl shadow-sm text-sm transition"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>Share</span>
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-xl shadow-sm text-sm transition"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>Share</span>
+                  </button>
+
+                  <button
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="flex items-center space-x-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 font-medium py-2 px-3 rounded-xl shadow-sm text-sm transition"
+                    title="Delete Document"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -300,6 +316,17 @@ export const DocumentEditorPage: React.FC = () => {
           document={document}
           onClose={() => setIsShareModalOpen(false)}
           onSuccess={fetchDocument}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && document && (
+        <DeleteConfirmModal
+          document={document}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDeleted={() => {
+            navigate('/dashboard');
+          }}
         />
       )}
     </div>

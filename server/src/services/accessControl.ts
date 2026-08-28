@@ -69,3 +69,7 @@ export function canRename(permission: EffectivePermission): boolean {
 export function canShare(permission: EffectivePermission): boolean {
   return permission === 'OWNER';
 }
+
+export function canDelete(permission: EffectivePermission): boolean {
+  return permission === 'OWNER';
+}

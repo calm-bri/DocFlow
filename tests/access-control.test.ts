@@ -170,4 +170,44 @@ describe('DocFlow Document Authorization & Sharing Logic Suite', () => {
     expect(editRes.status).toBe(403);
     expect(editRes.body.error).toContain('Permission denied');
   });
+
+  // TEST 8: Non-owner Bob (VIEWER) or Carol cannot delete Alice's document (403 Forbidden)
+  it('Test 8: Non-owner cannot delete document (403 Forbidden)', async () => {
+    // Bob attempts to delete
+    const bobDeleteRes = await request(app)
+      .delete(`/api/documents/${testDocId}`)
+      .set('X-User-Id', bobId);
+
+    expect(bobDeleteRes.status).toBe(403);
+    expect(bobDeleteRes.body.error).toContain('Only the document owner can delete');
+
+    // Unrelated user Carol attempts to delete
+    const carolDeleteRes = await request(app)
+      .delete(`/api/documents/${testDocId}`)
+      .set('X-User-Id', carolId);
+
+    expect(carolDeleteRes.status).toBe(403);
+    expect(carolDeleteRes.body.error).toContain('Only the document owner can delete');
+  });
+
+  // TEST 9: Owner Alice can successfully delete her document
+  it('Test 9: Owner Alice can delete her document (200 OK)', async () => {
+    const deleteRes = await request(app)
+      .delete(`/api/documents/${testDocId}`)
+      .set('X-User-Id', aliceId);
+
+    expect(deleteRes.status).toBe(200);
+    expect(deleteRes.body.message).toContain('successfully deleted');
+    expect(deleteRes.body.id).toBe(testDocId);
+  });
+
+  // TEST 10: Accessing deleted document returns 404 Not Found
+  it('Test 10: Accessing deleted document returns 404 Not Found', async () => {
+    const getRes = await request(app)
+      .get(`/api/documents/${testDocId}`)
+      .set('X-User-Id', aliceId);
+
+    expect(getRes.status).toBe(404);
+    expect(getRes.body.error).toContain('Document not found');
+  });
 });

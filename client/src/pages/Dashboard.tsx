@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { ShareModal } from '../components/ShareModal';
+import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
 import { useUser } from '../context/UserContext';
 import { DocumentService } from '../services/api';
 import { DocumentItem } from '../types/index';
@@ -9,6 +10,7 @@ import {
   FileText,
   Clock,
   Share2,
+  Trash2,
   Plus,
   RefreshCw,
 } from 'lucide-react';
@@ -23,6 +25,7 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sharingDoc, setSharingDoc] = useState<DocumentItem | null>(null);
+  const [deletingDoc, setDeletingDoc] = useState<DocumentItem | null>(null);
 
   const fetchDocuments = async () => {
     try {
@@ -189,19 +192,32 @@ export const Dashboard: React.FC = () => {
                         <span>Updated {formatDate(doc.updatedAt)}</span>
                       </div>
 
-                      {/* Share Button (Only for Owners) */}
+                      {/* Owner Actions (Share & Delete) */}
                       {isOwner && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSharingDoc(doc);
-                          }}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-blue-600 transition"
-                          title="Share Document"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSharingDoc(doc);
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-blue-600 transition"
+                            title="Share Document"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingDoc(doc);
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition"
+                            title="Delete Document"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -218,6 +234,17 @@ export const Dashboard: React.FC = () => {
           document={sharingDoc}
           onClose={() => setSharingDoc(null)}
           onSuccess={fetchDocuments}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingDoc && (
+        <DeleteConfirmModal
+          document={deletingDoc}
+          onClose={() => setDeletingDoc(null)}
+          onDeleted={() => {
+            fetchDocuments();
+          }}
         />
       )}
     </div>

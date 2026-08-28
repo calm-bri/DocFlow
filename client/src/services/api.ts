@@ -80,6 +80,11 @@ export const DocumentService = {
     });
     return res.data;
   },
+
+  deleteDocument: async (id: string): Promise<{ message: string; id: string }> => {
+    const res = await api.delete<{ message: string; id: string }>(`/documents/${id}`);
+    return res.data;
+  },
 };
 
 export default api;

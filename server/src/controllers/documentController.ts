@@ -7,6 +7,7 @@ import {
   canEdit,
   canRename,
   canShare,
+  canDelete,
 } from '../services/accessControl';
 import { convertTextToTipTapJson } from '../utils/textToTipTap';
 
@@ -300,5 +301,36 @@ export async function importDocument(req: AuthenticatedRequest, res: Response) {
   } catch (error) {
     console.error('Error importing document:', error);
     return res.status(500).json({ error: 'Failed to import document' });
+  }
+}
+
+export async function deleteDocument(req: AuthenticatedRequest, res: Response) {
+  try {
+    const user = req.user!;
+    const { id } = req.params;
+
+    const { permission, document } = await getDocumentAccess(user.id, id);
+
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    if (!canDelete(permission)) {
+      return res.status(403).json({
+        error: 'Permission denied: Only the document owner can delete this document',
+      });
+    }
+
+    await prisma.document.delete({
+      where: { id },
+    });
+
+    return res.json({
+      message: 'Document successfully deleted',
+      id,
+    });
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    return res.status(500).json({ error: 'Failed to delete document' });
   }
 }

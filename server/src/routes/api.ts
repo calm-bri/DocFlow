@@ -8,6 +8,7 @@ import {
   createDocument,
   getDocumentById,
   updateDocument,
+  deleteDocument,
   shareDocument,
   importDocument,
 } from '../controllers/documentController';
@@ -29,6 +30,7 @@ router.get('/documents/shared', getSharedDocuments);
 router.post('/documents', createDocument);
 router.get('/documents/:id', getDocumentById);
 router.put('/documents/:id', updateDocument);
+router.delete('/documents/:id', deleteDocument);
 router.post('/documents/:id/share', shareDocument);
 router.post('/documents/import', upload.single('file'), importDocument);
 
