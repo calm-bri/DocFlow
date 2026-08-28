@@ -3,10 +3,13 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "Node",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["prisma/**/*"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
