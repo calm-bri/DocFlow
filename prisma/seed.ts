@@ -158,6 +158,14 @@ const designDocContent = JSON.stringify({
 });
 
 async function main() {
+  // Idempotency guard: skip seeding if demo users already exist.
+  // This prevents data loss on redeployment — user-created documents are preserved.
+  const existingUserCount = await prisma.user.count();
+  if (existingUserCount > 0) {
+    console.log(`Seed skipped: database already has ${existingUserCount} user(s). Existing data preserved.`);
+    return;
+  }
+
   console.log('Seeding demo users...');
 
   // Seed Users
@@ -193,11 +201,7 @@ async function main() {
 
   console.log('Demo Users:', { alice: alice.name, bob: bob.name, carol: carol.name });
 
-  // Clean existing documents for clean seed
-  await prisma.documentAccess.deleteMany({});
-  await prisma.document.deleteMany({});
-
-  // Document 1: Owned by Alice, Shared with Bob (EDITOR) & Carol (VIEWER)
+  // Seed demo documents (only reached on first deploy)
   const doc1 = await prisma.document.create({
     data: {
       id: 'doc-roadmap-alice-100',
@@ -253,3 +257,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
