@@ -51,6 +51,21 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api', apiRouter);
 
+// Root status endpoint
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    name: 'DocFlow API Server',
+    status: 'online',
+    health: '/health',
+    api: '/api',
+    endpoints: {
+      users: '/api/users',
+      documents: '/api/documents',
+      health: '/health',
+    },
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
