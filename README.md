@@ -1,108 +1,173 @@
 # DocFlow
 
-A lightweight, full-stack collaborative document workspace designed for high reliability, role-based sharing, and real-time collaboration.
+A lightweight full-stack collaborative document workspace with rich-text editing, persistence, file import, role-based sharing, and real-time collaboration.
 
-## Live Demo
+## 🚀 Live Demo
 
-**Frontend**: [ADD AFTER DEPLOYMENT]  
-**Backend**: [ADD AFTER DEPLOYMENT]  
+- **Frontend**: [https://client-brijesh22.vercel.app](https://client-brijesh22.vercel.app)
+- **Backend API**: [https://docflow-b4fh.onrender.com](https://docflow-b4fh.onrender.com)
 
-## Features
+> **Note on Render Free Tier**: The backend service is hosted on Render's free tier. If the service has spun down due to inactivity, the initial request or wake-up may take ~30–50 seconds. Subsequent operations are immediate.
 
-- **Rich Text Editing**: TipTap editor supporting formatting, headings, and lists.
-- **Structured JSON Storage**: Document contents are stored strictly as structured JSON trees in PostgreSQL.
-- **Debounced Autosave**: Automatic background saving triggered ~800ms after typing stops.
-- **Role-Based Sharing (VIEWER / EDITOR)**: Granular permission enforcement calculated at REST API, Socket.IO, and UI layers.
-- **Real-Time Collaboration**: Live synchronisation via Socket.IO, live connection badge, and collaborator presence avatars.
-- **Document Import**: Supports importing `.txt` and `.md` files.
-- **Demo Persona Switcher**: Instantly switch between Alice, Bob, and Carol to test authorization logic.
+---
 
-## Real-Time Collaboration
+## ⚡ Quick Start for Reviewers
 
-- Multiple users can open the same shared document.
-- Live updates are delivered using Socket.IO.
-- Active collaborator presence is displayed in the header.
-- OWNER and EDITOR can edit content and broadcast changes.
-- VIEWER can receive live updates but cannot edit.
-- Document access is strictly authorized server-side.
+Follow these steps to evaluate the end-to-end functionality and real-time features in minutes:
 
-**Limitation**: The collaboration model uses a deliberately scoped **last-write-wins** strategy rather than CRDT or operational transformation. Simultaneous conflicting edits may overwrite one another.
+1. **Open the live frontend**: Navigate to [https://client-brijesh22.vercel.app](https://client-brijesh22.vercel.app).
+2. **Switch between demo users**: Use the user switcher in the sidebar to toggle between seeded personas (**Alice**, **Bob**, and **Carol**).
+3. **Open or create a document**: Create a new document or open an existing one from the dashboard.
+4. **Share it with another demo user**: Click **Share** (top right) and grant `EDITOR` or `VIEWER` permission to another persona (e.g., share Alice's document with Bob).
+5. **Open the same document in another session**: Open a second browser window (e.g., Incognito) and switch to the shared user (Bob).
+6. **Test real-time collaboration and permissions**:
+   - Type in one window and watch changes appear instantly across both sessions.
+   - Observe live collaborator presence badges in the document header.
+   - Test changing permission to `VIEWER` to confirm real-time editor lockdown.
 
-## Supported File Types
+---
 
-- `.txt`
-- `.md`
+## 👥 Seeded Demo Accounts
 
-## Local Setup
+The application uses pre-seeded demo personas with a lightweight persona switcher in the UI for rapid testing of authorization boundaries and role-based sharing:
 
+- **Alice Johnson** — `alice@docflow.demo` (Document creator / primary owner)
+- **Bob Smith** — `bob@docflow.demo` (Collaborator / Editor)
+- **Carol Davis** — `carol@docflow.demo` (Collaborator / Viewer)
+
+> Authentication is intentionally lightweight with persona switching enabled for evaluation and demonstration purposes.
+
+---
+
+## ✨ Features
+
+- **Document Management**:
+  - Create new blank documents with default naming.
+  - Rename documents inline with instant debounced persistence.
+  - Clear dashboard distinction between **My Documents** (owned) and **Shared with Me** (collaborator access).
+- **Rich-Text Editing (TipTap)**:
+  - Bold, Italic, and Underline formatting
+  - Heading 1 and Heading 2 structure
+  - Bulleted lists and numbered lists
+  - Normal paragraph styling and placeholder prompts
+- **Debounced Autosave & Persistence**:
+  - Automatic background persistence to PostgreSQL debounced at ~800ms.
+  - Real-time visual status indicator (**Saved**, **Saving...**, **Unsaved**, **Error**).
+  - Stored strictly as structured TipTap JSON trees to prevent malformed markup.
+- **File Import**:
+  - Upload and parse `.txt` and `.md` (Markdown) files directly into TipTap document structures.
+- **Role-Based Sharing & Access Control**:
+  - **OWNER**: Full control over document content, renaming, sharing, and collaborator permissions.
+  - **EDITOR**: Can view and edit content with real-time updates and autosave.
+  - **VIEWER**: Read-only access with active real-time viewing; editing controls and typing are strictly disabled.
+  - Server-side access enforcement across both REST APIs and Socket.IO connections.
+- **Real-Time Collaboration**:
+  - Live bi-directional document synchronization using Socket.IO.
+  - Real-time collaborator presence indicators and connection status badges.
+  - Permission-aware room joins preventing unauthorized listening or emitting.
+
+---
+
+## 🔄 Real-Time Collaboration Model
+
+- Multiple users can view and edit the same shared document simultaneously.
+- Real-time events (`document:update` and `document:presence`) are broadcast through Socket.IO rooms.
+- **OWNER** and **EDITOR** permissions allow broadcasting updates.
+- **VIEWER** connections receive live broadcasts but cannot push modifications.
+- **Concurrency Model**: Collaboration uses a deliberately scoped **last-write-wins** strategy. DocFlow intentionally does not implement complex OT (Operational Transformation) or CRDT algorithms; concurrent edits to the same content block will resolve to the most recent update received.
+
+---
+
+## 💻 Local Setup & Development
+
+### Prerequisites
+- Node.js (v18+)
+- PostgreSQL local instance or hosted connection string
+
+### 1. Clone & Install Dependencies
 ```bash
-# Install dependencies
+git clone https://github.com/calm-bri/DocFlow.git
+cd DocFlow
+
+# Install root, client, and server dependencies
 npm install
 cd client && npm install
 cd ../server && npm install
 cd ..
+```
 
-# Set up environment variables
+### 2. Environment Variables
+
+Create environment configuration files from the provided examples:
+
+```bash
 cp .env.example .env
 cp client/.env.example client/.env
 cp server/.env.example server/.env
+```
 
-# Setup database (Requires PostgreSQL locally)
+#### Root (`.env`)
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/docflow"
+PORT=4000
+CLIENT_URL=http://localhost:3000
+```
+
+#### Client (`client/.env`)
+```env
+VITE_API_URL=http://localhost:4000/api
+VITE_SOCKET_URL=http://localhost:4000
+```
+
+#### Server (`server/.env`)
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/docflow"
+PORT=4000
+CLIENT_URL=http://localhost:3000
+```
+
+### 3. Database Setup & Seeding
+
+```bash
+# Push Prisma schema to PostgreSQL
 npm run db:push
-npm run db:seed
 
-# Start development servers
+# Seed demo users (Alice, Bob, Carol) and sample documents
+npm run db:seed
+```
+
+### 4. Run Locally
+
+```bash
+# Start both client and server concurrently
 npm run dev
 ```
 
-## Environment Variables
+- Client: `http://localhost:3000`
+- Server API: `http://localhost:4000`
 
-### Root (`.env`)
-- `DATABASE_URL`: Connection string for PostgreSQL (e.g. `postgresql://user:password@localhost:5432/docflow`).
-- `PORT`: Express server port (default `4000`).
-- `CLIENT_URL`: Allowed CORS origin for the frontend (default `http://localhost:3000`).
+---
 
-### Client (`client/.env`)
-- `VITE_API_URL`: URL to backend REST API.
-- `VITE_SOCKET_URL`: URL to Socket.IO backend.
+## 🧪 Testing
 
-### Server (`server/.env`)
-- `PORT`: Explicit server port definition.
-- `CLIENT_URL`: Exact client domain for CORS.
-
-## Database Setup
-
-```bash
-npm run db:push
-npm run db:seed
-```
-
-## Demo Users
-
-- **Alice Johnson** (alice@docflow.demo)
-- **Bob Smith** (bob@docflow.demo)
-- **Carol Davis** (carol@docflow.demo)
-
-## Testing
-
+### Automated Access-Control & Integration Tests
 ```bash
 npm run test
 ```
 
-## Real-Time Collaboration Testing
-
-1. Open two browser windows (e.g., standard and incognito).
-2. Login as **Alice** in Window A.
+### Manual Real-Time Testing Flow
+1. Open two browser windows side by side (e.g. Standard and Incognito).
+2. Log in as **Alice** in Window A.
 3. Open a document and share it with **Bob** as an `EDITOR`.
-4. Login as **Bob** in Window B and open the same document.
-5. Verify that Bob sees Alice's avatar and connection badge in the header.
-6. Edit from Alice's window.
-7. Verify Bob receives updates immediately.
-8. Edit from Bob's window.
-9. Verify Alice receives updates immediately.
-10. Change Bob's permission to `VIEWER` and verify Bob's editor locks and he can only view updates.
+4. Log in as **Bob** in Window B and open the shared document from the dashboard.
+5. Notice Bob's avatar appear in Alice's header and vice versa.
+6. Type in Window A; verify changes sync to Window B in real time.
+7. Switch Bob's role to `VIEWER` in Alice's share modal; verify Bob's editor switches immediately to read-only mode.
 
-## Deployment
+---
 
-Frontend (Vercel): [ADD AFTER DEPLOYMENT]  
-Backend (Render): [ADD AFTER DEPLOYMENT]
+## 🌐 Deployment Details
+
+- **Frontend**: [Vercel](https://client-brijesh22.vercel.app) (`https://client-brijesh22.vercel.app`)
+- **Backend**: [Render](https://docflow-b4fh.onrender.com) (`https://docflow-b4fh.onrender.com`)
+- **Database**: PostgreSQL
