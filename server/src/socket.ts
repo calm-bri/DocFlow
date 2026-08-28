@@ -48,10 +48,12 @@ function getActiveCollaborators(documentId: string): CollaboratorUser[] {
 }
 
 export function initSocketServer(httpServer: HttpServer): SocketIOServer {
-  const clientUrl = process.env.CLIENT_URL || '*';
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: clientUrl,
+      origin: (origin, callback) => {
+        // Allow all origins (Vercel preview/production, localhost, etc.)
+        callback(null, true);
+      },
       methods: ['GET', 'POST', 'PUT'],
       credentials: true,
     },

@@ -17,7 +17,9 @@ export function getSocket(): Socket {
     // In dev Vite mode, proxy points /api to localhost:4000; connect to origin or localhost:4000
     const socketUrl =
       import.meta.env.VITE_SOCKET_URL ||
-      (window.location.hostname === 'localhost'
+      (import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+        : window.location.hostname === 'localhost'
         ? 'http://localhost:4000'
         : window.location.origin);
 

@@ -11,12 +11,37 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 
-const clientUrl = process.env.CLIENT_URL || '*';
+// Dynamic CORS origin handler supporting Vercel previews, production, and custom CLIENT_URL
+export const isAllowedOrigin = (origin: string | undefined): boolean => {
+  if (!origin) return true; // Server-to-server, health check, Postman, etc.
+  const cleanOrigin = origin.replace(/\/$/, '');
+
+  const rawClientUrl = process.env.CLIENT_URL || '';
+  if (rawClientUrl === '*') return true;
+  if (rawClientUrl) {
+    const origins = rawClientUrl.split(',').map((u) => u.trim().replace(/\/$/, ''));
+    if (origins.includes(cleanOrigin)) return true;
+  }
+
+  // Permit any Vercel deployment (previews + production) and local development
+  if (
+    /^https:\/\/.*\.vercel\.app$/.test(cleanOrigin) ||
+    /^http:\/\/localhost(:\d+)?$/.test(cleanOrigin) ||
+    /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(cleanOrigin)
+  ) {
+    return true;
+  }
+
+  return true; // Permissive fallback for public demo API
+};
 
 app.use(
   cors({
-    origin: clientUrl,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'x-user-id'],
     credentials: true,
   })
 );
